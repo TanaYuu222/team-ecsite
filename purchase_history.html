@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+	<head>
+		<meta charset="UTF-8" />
+		
+		<link href="/css/reset.css" th:href="@{/css/reset.css}" rel="stylesheet" />
+		<link href="/css/style.css" th:href="@{/css/style.css}" rel="stylesheet" />
+		
+		<title>マイ・ラーメン～私が選ぶ、私だけのラーメン～</title>
+	</head>
+	
+	<body>
+		<header th:insert="fragments/page_header::pageHeader"></header>
+	
+		<main>
+			<div class="container history">
+				<div>
+					<h2>購入履歴</h2>
+				</div>
+				
+				<div class="noData hidden">
+					<p class="info">購入履歴はありません。</p>
+				</div>
+				
+				<table class="history">
+					<tr>
+						<th>購入日時</th><th>商品名</th><th>価格(円)</th><th>個数</th><th>宛名</th><th>宛先住所</th>
+					</tr>
+					<tr th:each = "history:${history}">
+						<td th:text = "${history.purchasedAt}" />
+						<td th:text = "${history.productName}" />
+						<td th:text = "${history.price}" />
+						<td th:text = "${history.productCount}" />
+						<td th:text = "${history.familyName} + ' ' + ${history.firstName}" />
+						<td class="address" th:text = "${history.address}" />
+					</tr>
+				</table>
+				
+				<div class="buttonArea">
+					<button id="delete">削除</button>
+				</div>
+			</div>
+		</main>
+		
+		<script th:inline="javascript">
+		/*<![CDATA[*/
+		
+			//削除ボタンが押下されたとき、画面から購入履歴を削除
+			$(()=>{
+				isExistsHistoryList(false);
+				$('button#delete').on('click', removeHistory);
+			});
+			
+			function isExistsHistoryList(deleted) {
+				let histroryListSize = /*[[${history.size()}]]*/ 0;
+				
+				//リストのサイズが0　もしくは　テーブルヘッダー以外の行がなければ
+				if (histroryListSize == 0 || deleted) {
+					
+					$('.noData').removeClass('hidden');
+					$('table.history').remove();
+					$('button#delete').remove();
+				}
+			}
+			
+			let removeHistory = (event) => {
+				
+				$.ajax({
+					type: 'POST',
+					url: '/brown/history/delete'
+				})
+				.then((result) => {
+					isExistsHistoryList(true);
+				}, () => {
+					alert('Error: ajax connection failed.');
+				});
+			}
+		/*]]>*/
+		</script>
+	</body>
+</html>

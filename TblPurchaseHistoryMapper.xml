@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="jp.co.internous.brown.model.mapper.TblPurchaseHistoryMapper">
+
+	<select id="findHistory" resultType="jp.co.internous.brown.model.domain.dto.PurchaseHistoryDto">
+		SELECT
+			DATE_FORMAT(h.purchased_at, '%Y/%m/%d %T') AS purchased_at,
+			p.product_name,
+			h.price,
+			h.product_count,
+			d.family_name,
+			d.first_name,
+			d.address
+		FROM tbl_purchase_history h
+		INNER JOIN mst_product p
+		ON h.product_id = p.id
+		INNER JOIN mst_destination d
+		ON h.destination_id = d.id
+		WHERE h.status = 1 AND h.user_id = #{userId}
+		ORDER BY purchased_at DESC;
+	</select>
+	
+	<insert id="insert" useGeneratedKeys="true">
+		INSERT INTO tbl_purchase_history (user_id, product_id, product_count, price, destination_id)
+		SELECT c.user_id, c.product_id, c.product_count, p.price, #{destinationId}
+		FROM tbl_cart c
+		JOIN mst_product p
+		ON c.product_id = p.id
+		WHERE c.user_id = #{userId};
+	</insert>
+	
+</mapper>
